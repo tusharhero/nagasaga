@@ -55,16 +55,16 @@ main (void)
                 switch (event.key.keysym.sym)
                   {
                   case SDLK_d:
-                    snake.x += (int)snake.w;
+                    snake.x += snake.w;
                     break;
                   case SDLK_a:
-                    snake.x -= (int)snake.w;
+                    snake.x -= snake.w;
                     break;
                   case SDLK_w:
-                    snake.y -= (int)snake.h;
+                    snake.y -= snake.h;
                     break;
                   case SDLK_s:
-                    snake.y += (int)snake.h;
+                    snake.y += snake.h;
                     break;
                   }
                 break;
