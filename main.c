@@ -10,7 +10,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 #define TITLE "NagaSaga"
 #define WIDTH 640
 #define HEIGHT 480
@@ -55,16 +54,16 @@ main (void)
                 switch (event.key.keysym.sym)
                   {
                   case SDLK_d:
-                    snake.x += snake.w;
+                    snake.x = snake.x % WIDTH + snake.w;
                     break;
                   case SDLK_a:
-                    snake.x -= snake.w;
+                    snake.x = 0 < snake.x ? snake.x - snake.w : WIDTH;
                     break;
                   case SDLK_w:
-                    snake.y -= snake.h;
+                    snake.y = 0 < snake.y ? snake.y - snake.h : HEIGHT;
                     break;
                   case SDLK_s:
-                    snake.y += snake.h;
+                    snake.y = snake.y % HEIGHT + snake.h;
                     break;
                   }
                 break;
