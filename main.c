@@ -37,6 +37,13 @@ main (void)
   SDL_Rect snake
       = (SDL_Rect){ .x = WIDTH / 2, .y = HEIGHT / 2, .w = 10, .h = 10 };
 
+  SDL_Rect food = (SDL_Rect){ .x = (int)(rand () % WIDTH),
+                              .y = (int)(rand () % HEIGHT),
+                              .w = 5,
+                              .h = 5 };
+
+  int points = 0;
+
   for (;;)
     {
       SDL_Event event;
@@ -71,11 +78,20 @@ main (void)
             }
         }
 
+      if (abs (food.x - snake.x) <= snake.w &&
+          abs(food.y - snake.y) <= snake.h )
+        {
+	  ++points; 
+	  food.x = (int)(rand () % WIDTH);
+	  food.y = (int)(rand () % HEIGHT);
+        }
+
       SDL_SetRenderDrawColor (renderer, 0, 0, 0, 0);
       SDL_RenderClear (renderer);
 
       SDL_SetRenderDrawColor (renderer, 255, 255, 255, 255);
       SDL_RenderFillRect (renderer, &snake);
+      SDL_RenderFillRect (renderer, &food);
       SDL_RenderPresent (renderer);
     }
 
