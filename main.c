@@ -14,6 +14,15 @@
 #define WIDTH 640
 #define HEIGHT 480
 
+#define EXIT()                                                                \
+  {                                                                           \
+    free (snake);                                                             \
+    SDL_DestroyRenderer (renderer);                                           \
+    SDL_DestroyWindow (window);                                               \
+    SDL_Quit ();                                                              \
+    return 0;                                                                 \
+  }
+
 int
 main (void)
 {
@@ -52,11 +61,7 @@ main (void)
           switch (event.type)
             {
             case SDL_QUIT:
-              SDL_DestroyRenderer (renderer);
-              SDL_DestroyWindow (window);
-              SDL_Quit ();
-              free (snake);
-              return 0;
+              EXIT ()
             case SDL_KEYDOWN:
               {
                 switch (event.key.keysym.sym)
@@ -80,11 +85,7 @@ main (void)
                         = snake[points].y % HEIGHT + snake[points].h;
                     break;
                   case SDLK_ESCAPE:
-                    free (snake);
-                    SDL_DestroyRenderer (renderer);
-                    SDL_DestroyWindow (window);
-                    SDL_Quit ();
-                    return 0;
+                    EXIT ()
                     break;
                   }
                 break;
@@ -117,7 +118,8 @@ main (void)
 
       SDL_SetRenderDrawColor (renderer, 255, 255, 255, 255);
 
-      SDL_RenderFillRect (renderer, &(snake[points]));
+      for (int i = 0; i < points + 1; ++i)
+        SDL_RenderFillRect (renderer, &(snake[i]));
       SDL_RenderFillRect (renderer, &food);
       SDL_RenderPresent (renderer);
     }
