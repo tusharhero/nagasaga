@@ -44,7 +44,7 @@ main (void)
 
   Snake *snake = malloc (sizeof (Snake));
   snake->length = points + 1;
-  snake->body = malloc (sizeof (SDL_Rect) * points);
+  snake->body = malloc (sizeof (SDL_Rect) * (points + 1));
   snake->body[0]
       = (SDL_Rect){ .x = WIDTH / 2, .y = HEIGHT / 2, .w = 10, .h = 10 };
 
@@ -72,25 +72,27 @@ main (void)
                   {
                   case SDLK_d:
                     snake->body[snake->length].x
-                        = snake->body[points].x % WIDTH
-                          + snake->body[points].w;
+                        = snake->body[snake->length].x % WIDTH
+                          + snake->body[snake->length].w;
                     break;
                   case SDLK_a:
                     snake->body[snake->length].x
-                        = 0 < snake->body[points].x
-                              ? snake->body[points].x - snake->body[points].w
+                        = 0 < snake->body[snake->length].x
+                              ? snake->body[snake->length].x
+                                    - snake->body[snake->length].w
                               : WIDTH;
                     break;
                   case SDLK_w:
                     snake->body[snake->length].y
-                        = 0 < snake->body[points].y
-                              ? snake->body[points].y - snake->body[points].h
+                        = 0 < snake->body[snake->length].y
+                              ? snake->body[snake->length].y
+                                    - snake->body[snake->length].h
                               : HEIGHT;
                     break;
                   case SDLK_s:
                     snake->body[snake->length].y
-                        = snake->body[points].y % HEIGHT
-                          + snake->body[points].h;
+                        = snake->body[snake->length].y % HEIGHT
+                          + snake->body[snake->length].h;
                     break;
                   }
                 break;
@@ -108,6 +110,10 @@ main (void)
           snake->length = points + 1;
           snake->body
               = realloc (snake->body, sizeof (SDL_Rect) * snake->length);
+          snake->body[snake->length] = (SDL_Rect){ .x = snake->body[points].x,
+                                                   .y = snake->body[points].y,
+                                                   .w = 10,
+                                                   .h = 10 };
         }
 
       SDL_SetRenderDrawColor (renderer, 0, 0, 0, 0);
