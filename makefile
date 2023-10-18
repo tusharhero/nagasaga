@@ -1,6 +1,5 @@
 test : main.c
-	# gcc -Wall main.c -g -lSDL2 -lm
-	gcc -fsanitize=address,undefined main.c -g -lSDL2 -lm
+	zig cc -Wall main.c -g -lSDL2 -lm
 	./a.out
 build : main.c
 	zig cc main.c -g -lSDL2 -lm
