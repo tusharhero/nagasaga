@@ -14,6 +14,12 @@
 #define WIDTH 640
 #define HEIGHT 480
 
+typedef struct
+{
+  SDL_Rect *body;
+  int length;
+} Snake;
+
 int
 main (void)
 {
@@ -34,15 +40,17 @@ main (void)
 
   SDL_Renderer *renderer = SDL_CreateRenderer (window, -1, 0);
 
-  SDL_Rect snake
+  int points = 0;
+
+  Snake *snake = malloc (sizeof (Snake));
+  snake->length = points + 1;
+  snake->body = malloc (sizeof (SDL_Rect) * points);
+  snake->body[0]
       = (SDL_Rect){ .x = WIDTH / 2, .y = HEIGHT / 2, .w = 10, .h = 10 };
 
-  SDL_Rect food = (SDL_Rect){ .x = (int)(rand () % WIDTH),
-                              .y = (int)(rand () % HEIGHT),
-                              .w = 5,
-                              .h = 5 };
-
-  int points = 0;
+  SDL_Rect food = (SDL_Rect){
+    .x = (int)(rand () % WIDTH), .y = (int)(rand () % HEIGHT), .w = 5, .h = 5
+  };
 
   for (;;)
     {
@@ -55,22 +63,34 @@ main (void)
               SDL_DestroyRenderer (renderer);
               SDL_DestroyWindow (window);
               SDL_Quit ();
+              free (snake->body);
+              free (snake);
               return 0;
             case SDL_KEYDOWN:
               {
                 switch (event.key.keysym.sym)
                   {
                   case SDLK_d:
-                    snake.x = snake.x % WIDTH + snake.w;
+                    snake->body[snake->length].x
+                        = snake->body[points].x % WIDTH
+                          + snake->body[points].w;
                     break;
                   case SDLK_a:
-                    snake.x = 0 < snake.x ? snake.x - snake.w : WIDTH;
+                    snake->body[snake->length].x
+                        = 0 < snake->body[points].x
+                              ? snake->body[points].x - snake->body[points].w
+                              : WIDTH;
                     break;
                   case SDLK_w:
-                    snake.y = 0 < snake.y ? snake.y - snake.h : HEIGHT;
+                    snake->body[snake->length].y
+                        = 0 < snake->body[points].y
+                              ? snake->body[points].y - snake->body[points].h
+                              : HEIGHT;
                     break;
                   case SDLK_s:
-                    snake.y = snake.y % HEIGHT + snake.h;
+                    snake->body[snake->length].y
+                        = snake->body[points].y % HEIGHT
+                          + snake->body[points].h;
                     break;
                   }
                 break;
@@ -78,19 +98,26 @@ main (void)
             }
         }
 
-      if (abs (food.x - snake.x) <= snake.w &&
-          abs(food.y - snake.y) <= snake.h )
+      if (abs (food.x - snake->body[points].x) <= snake->body[points].w
+          && abs (food.y - snake->body[points].y) <= snake->body[points].h)
         {
-	  ++points; 
-	  food.x = (int)(rand () % WIDTH);
-	  food.y = (int)(rand () % HEIGHT);
+          ++points;
+          food.x = (int)(rand () % WIDTH);
+          food.y = (int)(rand () % HEIGHT);
+
+          snake->length = points + 1;
+          snake->body
+              = realloc (snake->body, sizeof (SDL_Rect) * snake->length);
         }
 
       SDL_SetRenderDrawColor (renderer, 0, 0, 0, 0);
       SDL_RenderClear (renderer);
 
       SDL_SetRenderDrawColor (renderer, 255, 255, 255, 255);
-      SDL_RenderFillRect (renderer, &snake);
+      for (int i = 0; i < snake->length; ++i)
+        {
+          SDL_RenderFillRect (renderer, &(snake->body[i]));
+        }
       SDL_RenderFillRect (renderer, &food);
       SDL_RenderPresent (renderer);
     }
