@@ -67,22 +67,26 @@ main (void)
                 switch (event.key.keysym.sym)
                   {
                   case SDLK_d:
-                    snake[points].x
-                        = snake[points].x % WIDTH + snake[points].w;
+                    for (int i = 0; i <= points; ++i)
+                      snake[i].x = snake[i].x % WIDTH + snake[i].w
+                                   + (points - i) * snake[i].w;
                     break;
                   case SDLK_a:
-                    snake[points].x = 0 < snake[points].x
-                                          ? snake[points].x - snake[points].w
-                                          : WIDTH;
+                    for (int i = 0; i <= points; ++i)
+                      snake[i].x
+                          = (0 < snake[i].x ? snake[i].x - snake[i].w : WIDTH)
+                            + (points - i) * snake[i].w;
                     break;
                   case SDLK_w:
-                    snake[points].y = 0 < snake[points].y
-                                          ? snake[points].y - snake[points].h
-                                          : HEIGHT;
+                    for (int i = 0; i <= points; ++i)
+                      snake[i].y
+                          = (0 < snake[i].y ? snake[i].y - snake[i].h : HEIGHT)
+                            + (points - i) * snake[i].h;
                     break;
                   case SDLK_s:
-                    snake[points].y
-                        = snake[points].y % HEIGHT + snake[points].h;
+                    for (int i = 0; i <= points; ++i)
+                      snake[i].y = snake[i].y % HEIGHT + snake[i].h
+                                   + (points - i) * snake[i].h;
                     break;
                   case SDLK_ESCAPE:
                     EXIT ()
@@ -96,7 +100,6 @@ main (void)
       if (abs (food.x - snake[points].x) <= snake[points].w
           && abs (food.y - snake[points].y) <= snake[points].h)
         {
-
           ++points;
           food.x = (int)(rand () % WIDTH);
           food.y = (int)(rand () % HEIGHT);
@@ -120,6 +123,7 @@ main (void)
 
       for (int i = 0; i < points + 1; ++i)
         SDL_RenderFillRect (renderer, &(snake[i]));
+
       SDL_RenderFillRect (renderer, &food);
       SDL_RenderPresent (renderer);
     }
