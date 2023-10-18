@@ -95,6 +95,7 @@ main (void)
       if (abs (food.x - snake[points].x) <= snake[points].w
           && abs (food.y - snake[points].y) <= snake[points].h)
         {
+
           ++points;
           food.x = (int)(rand () % WIDTH);
           food.y = (int)(rand () % HEIGHT);
@@ -102,17 +103,20 @@ main (void)
           if (points == allocated_max_length)
             {
               allocated_max_length *= 2;
-              snake = malloc (sizeof (SDL_Rect) * (allocated_max_length));
+              snake = realloc (snake,
+                               sizeof (SDL_Rect) * (allocated_max_length));
             }
-          snake[points] = (SDL_Rect){
-            .x = snake[points-1].x, .y = snake[points-1].y, .w = 10, .h = 10
-          };
+          snake[points] = (SDL_Rect){ .x = snake[points - 1].x,
+                                      .y = snake[points - 1].y,
+                                      .w = 10,
+                                      .h = 10 };
         }
 
       SDL_SetRenderDrawColor (renderer, 0, 0, 0, 0);
       SDL_RenderClear (renderer);
 
       SDL_SetRenderDrawColor (renderer, 255, 255, 255, 255);
+
       SDL_RenderFillRect (renderer, &(snake[points]));
       SDL_RenderFillRect (renderer, &food);
       SDL_RenderPresent (renderer);
