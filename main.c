@@ -56,8 +56,18 @@ move_rect (SDL_Rect *rect, Vector direction)
 void
 render_snake (SDL_Renderer *renderer, Snake snake)
 {
-
   SDL_RenderFillRect (renderer, &(snake.head));
+  for (size_t i = 0; i <= snake.length; ++i)
+    {
+      SDL_RenderFillRect (
+          renderer,
+          &((SDL_Rect){
+              .x = snake.head.x - i * snake.direction.x * snake.head.w,
+              .y = snake.head.y - i * snake.direction.y * snake.head.h,
+              .w = snake.head.w,
+              .h = snake.head.h,
+          }));
+    }
 }
 
 int
@@ -86,6 +96,7 @@ main (void)
     .head = (SDL_Rect){ .x = WIDTH / 2, .y = HEIGHT / 2, .w = 10, .h = 10 },
     .direction = (Vector){ .x = 0, .y = 0 },
     .length = score,
+
   };
 
   SDL_Rect food = (SDL_Rect){
