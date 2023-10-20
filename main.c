@@ -41,7 +41,6 @@ exit_program (SDL_Renderer *renderer, SDL_Window *window, Snake snake)
   return 0;
 }
 
-
 void
 set_turning_point (Snake *snake)
 {
@@ -135,7 +134,7 @@ main (void)
                          .direction = (Vector){ .x = 0, .y = 0 },
                          .length = score,
                          .turning_points = (VectorArray){
-                             .allocation_size = 1,
+                             .allocation_size = 128,
                              .length = 0,
                              .vectors
                              = malloc (sizeof (Vector)
