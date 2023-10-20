@@ -29,11 +29,10 @@ typedef struct
   Vector direction;
   size_t length;
 } Snake;
+
 void
-move_rect (SDL_Rect *rect, Vector direction)
+bound_rect (SDL_Rect *rect)
 {
-  rect->x = rect->x + direction.x;
-  rect->y = rect->y + direction.y;
 
   if (rect->x > WIDTH)
     {
@@ -54,19 +53,29 @@ move_rect (SDL_Rect *rect, Vector direction)
 }
 
 void
+move_rect (SDL_Rect *rect, Vector direction)
+{
+  rect->x = rect->x + direction.x;
+  rect->y = rect->y + direction.y;
+
+  bound_rect (rect);
+}
+
+void
 render_snake (SDL_Renderer *renderer, Snake snake)
 {
   SDL_RenderFillRect (renderer, &(snake.head));
+  SDL_Rect *temp_rect;
   for (size_t i = 0; i <= snake.length; ++i)
     {
-      SDL_RenderFillRect (
-          renderer,
-          &((SDL_Rect){
-              .x = snake.head.x - i * snake.direction.x * snake.head.w,
-              .y = snake.head.y - i * snake.direction.y * snake.head.h,
-              .w = snake.head.w,
-              .h = snake.head.h,
-          }));
+      temp_rect = &((SDL_Rect){
+          .x = snake.head.x - i * snake.direction.x * snake.head.w,
+          .y = snake.head.y - i * snake.direction.y * snake.head.h,
+          .w = snake.head.w,
+          .h = snake.head.h,
+      });
+      bound_rect (temp_rect);
+      SDL_RenderFillRect (renderer, temp_rect);
     }
 }
 
