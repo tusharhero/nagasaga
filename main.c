@@ -59,7 +59,6 @@ set_turning_point (Snake *snake)
 void
 bound_rect (SDL_Rect *rect)
 {
-
   if (rect->x > WIDTH)
     {
       rect->x = rect->x % WIDTH;
@@ -117,6 +116,7 @@ main (void)
   SDL_Window *window = SDL_CreateWindow (TITLE, SDL_WINDOWPOS_UNDEFINED,
                                          SDL_WINDOWPOS_UNDEFINED, WIDTH,
                                          HEIGHT, SDL_WINDOW_RESIZABLE);
+
   if (window == NULL)
     {
       printf ("SDL_CreateWindow Error: %s\n", SDL_GetError ());
@@ -151,6 +151,7 @@ main (void)
   int frame = 0;
   for (;;)
     {
+
       SDL_Event event;
       while (SDL_PollEvent (&event))
         {
