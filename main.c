@@ -10,14 +10,6 @@
 #define WIDTH 640
 #define HEIGHT 480
 
-#define EXIT()                                                                \
-  {                                                                           \
-    SDL_DestroyRenderer (renderer);                                           \
-    SDL_DestroyWindow (window);                                               \
-    SDL_Quit ();                                                              \
-    return 0;                                                                 \
-  }
-
 typedef struct
 {
   int x;
@@ -26,8 +18,8 @@ typedef struct
 
 typedef struct
 {
-  int allocation_size;
-  int length;
+  size_t allocation_size;
+  size_t length;
   Vector *vectors;
 } VectorArray;
 
@@ -39,18 +31,30 @@ typedef struct
   size_t length;
 } Snake;
 
+int
+exit_program (SDL_Renderer *renderer, SDL_Window *window, Snake snake)
+{
+  free (snake.turning_points.vectors);
+  SDL_DestroyRenderer (renderer);
+  SDL_DestroyWindow (window);
+  SDL_Quit ();
+  return 0;
+}
+
+
 void
 set_turning_point (Snake *snake)
 {
-  if (snake->turning_points.length <= snake->turning_points.allocation_size)
+  if (snake->turning_points.length >= snake->turning_points.allocation_size)
     {
       snake->turning_points.allocation_size *= 2;
       snake->turning_points.vectors
           = realloc (snake->turning_points.vectors,
                      snake->turning_points.allocation_size * sizeof (Vector));
     }
-  snake->turning_points.vectors[snake->turning_points.length++]
+  snake->turning_points.vectors[snake->turning_points.length]
       = (Vector){ .x = snake->head.x, .y = snake->head.y };
+  ++snake->turning_points.length;
 }
 
 void
@@ -154,7 +158,8 @@ main (void)
           switch (event.type)
             {
             case SDL_QUIT:
-              EXIT ()
+              return exit_program (renderer, window, snake);
+              break;
             case SDL_KEYDOWN:
               {
                 switch (event.key.keysym.sym)
@@ -176,7 +181,7 @@ main (void)
                     set_turning_point (&snake);
                     break;
                   case SDLK_ESCAPE:
-                    EXIT ()
+                    return exit_program (renderer, window, snake);
                     break;
                   }
                 break;
