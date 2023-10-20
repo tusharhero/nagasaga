@@ -40,7 +40,7 @@ bound_rect (SDL_Rect *rect)
     }
   if (rect->x < 0)
     {
-      rect->x = WIDTH - rect->w;
+      rect->x = WIDTH + rect->x;
     }
   if (rect->y > HEIGHT)
     {
@@ -48,7 +48,7 @@ bound_rect (SDL_Rect *rect)
     }
   if (rect->y < 0)
     {
-      rect->y = HEIGHT - rect->h;
+      rect->y = HEIGHT + rect->y;
     }
 }
 
@@ -127,16 +127,16 @@ main (void)
                 switch (event.key.keysym.sym)
                   {
                   case SDLK_d:
-                    snake.direction = (Vector){ .x = 1, .y = 0 };
+                    snake.direction = (Vector){ .x = +1 };
                     break;
                   case SDLK_a:
-                    snake.direction = (Vector){ .x = -1, .y = 0 };
+                    snake.direction = (Vector){ .x = -1 };
                     break;
                   case SDLK_w:
-                    snake.direction = (Vector){ .x = 0, .y = -1 };
+                    snake.direction = (Vector){ .y = -1 };
                     break;
                   case SDLK_s:
-                    snake.direction = (Vector){ .x = 0, .y = 1 };
+                    snake.direction = (Vector){ .y = +1 };
                     break;
                   case SDLK_ESCAPE:
                     EXIT ()
