@@ -3,7 +3,6 @@
 #include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_render.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -64,11 +63,11 @@ bound_pos (Vector pos)
 }
 
 Vector
-move_pos (Vector pos, Vector direction, Vector step_size)
+move_pos (Vector pos, Vector direction, Vector step_size, size_t delta)
 {
   return (Vector){
-    pos.x + direction.x * step_size.x,
-    pos.y + direction.y * step_size.y,
+    pos.x + direction.x * step_size.x * delta,
+    pos.y + direction.y * step_size.y * delta,
   };
 }
 
@@ -143,9 +142,16 @@ main (void)
     .h = 5,
   };
 
+  size_t last_tick_time = 0;
+  size_t tick_time = SDL_GetTicks ();
+  size_t delta = 0;
   int frame = 0;
   for (;;)
     {
+      tick_time = SDL_GetTicks64 ();
+      delta = tick_time - last_tick_time;
+      last_tick_time = tick_time;
+
       SDL_Event event;
       while (SDL_PollEvent (&event))
         {
@@ -179,23 +185,21 @@ main (void)
             }
         }
 
-      if (!(frame % 20))
+      Vector penul_pos, anti_penul_pos;
+      for (size_t i = 0; i <= snake.body.length; ++i)
         {
-          Vector penul_pos, anti_penul_pos;
-          for (size_t i = 0; i <= snake.body.length; ++i)
+          penul_pos = snake.body.vectors[i];
+          if (i == 0)
             {
-              penul_pos = snake.body.vectors[i];
-              if (i == 0)
-                {
-                  snake.body.vectors[i] = bound_pos (move_pos (
-                      penul_pos, snake.direction, snake_block_size));
-                }
-              else
-                {
-                  snake.body.vectors[i] = anti_penul_pos;
-                }
-              anti_penul_pos = penul_pos;
+              snake.body.vectors[i]
+                  = bound_pos (move_pos (penul_pos, snake.direction,
+                                         (Vector){ .x = 1, .y = 1 }, delta));
             }
+          else
+            {
+              snake.body.vectors[i] = anti_penul_pos;
+            }
+          anti_penul_pos = penul_pos;
         }
 
       if (abs (food.x - get_snake_head (snake).x) <= snake_block_size.x
