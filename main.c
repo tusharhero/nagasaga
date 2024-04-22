@@ -3,6 +3,7 @@
 #include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_render.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -25,82 +26,76 @@ typedef struct
 
 typedef struct
 {
-  SDL_Rect head;
+  VectorArray body;
   Vector direction;
-  VectorArray turning_points;
-  size_t length;
 } Snake;
 
 int
 exit_program (SDL_Renderer *renderer, SDL_Window *window, Snake snake)
 {
-  free (snake.turning_points.vectors);
+  free (snake.body.vectors);
   SDL_DestroyRenderer (renderer);
   SDL_DestroyWindow (window);
   SDL_Quit ();
   return 0;
 }
 
-void
-set_turning_point (Snake *snake)
+Vector
+bound_pos (Vector pos)
 {
-  if (snake->turning_points.length >= snake->turning_points.allocation_size)
+  Vector bounded_pos;
+  if (pos.x > WIDTH)
     {
-      snake->turning_points.allocation_size *= 2;
-      snake->turning_points.vectors
-          = realloc (snake->turning_points.vectors,
-                     snake->turning_points.allocation_size * sizeof (Vector));
+      bounded_pos.x = pos.x % WIDTH;
     }
-  snake->turning_points.vectors[snake->turning_points.length]
-      = (Vector){ .x = snake->head.x, .y = snake->head.y };
-  ++snake->turning_points.length;
+  if (pos.x < 0)
+    {
+      bounded_pos.x = WIDTH + pos.x;
+    }
+  if (pos.y > HEIGHT)
+    {
+      bounded_pos.y = pos.y % HEIGHT;
+    }
+  if (pos.y < 0)
+    {
+      bounded_pos.y = HEIGHT + pos.y;
+    }
+  return bounded_pos;
+}
+
+Vector
+move_pos (Vector pos, Vector direction, Vector step_size)
+{
+  return (Vector){
+    pos.x + direction.x * step_size.x,
+    pos.y + direction.y * step_size.y,
+  };
+}
+
+Vector
+get_snake_head (Snake snake)
+{
+  return snake.body.vectors[0];
+}
+
+SDL_Rect *
+get_rect (Vector position, Vector size)
+{
+  return &(SDL_Rect){
+    .x = position.x,
+    .y = position.y,
+    .w = size.x,
+    .h = size.y,
+  };
 }
 
 void
-bound_rect (SDL_Rect *rect)
+render_snake (SDL_Renderer *renderer, Snake snake, Vector blocksize)
 {
-  if (rect->x > WIDTH)
+  for (size_t i = 0; i < snake.body.length; ++i)
     {
-      rect->x = rect->x % WIDTH;
-    }
-  if (rect->x < 0)
-    {
-      rect->x = WIDTH + rect->x;
-    }
-  if (rect->y > HEIGHT)
-    {
-      rect->y = rect->y % HEIGHT;
-    }
-  if (rect->y < 0)
-    {
-      rect->y = HEIGHT + rect->y;
-    }
-}
-
-void
-move_rect (SDL_Rect *rect, Vector direction)
-{
-  rect->x = rect->x + direction.x;
-  rect->y = rect->y + direction.y;
-
-  bound_rect (rect);
-}
-
-void
-render_snake (SDL_Renderer *renderer, Snake snake)
-{
-  SDL_RenderFillRect (renderer, &(snake.head));
-  SDL_Rect *temp_rect;
-  for (size_t i = 0; i <= snake.length; ++i)
-    {
-      temp_rect = &((SDL_Rect){
-          .x = snake.head.x - i * snake.direction.x * snake.head.w,
-          .y = snake.head.y - i * snake.direction.y * snake.head.h,
-          .w = snake.head.w,
-          .h = snake.head.h,
-      });
-      bound_rect (temp_rect);
-      SDL_RenderFillRect (renderer, temp_rect);
+      SDL_RenderFillRect (renderer,
+                          get_rect (snake.body.vectors[i], blocksize));
     }
 }
 
@@ -126,20 +121,20 @@ main (void)
   SDL_Renderer *renderer = SDL_CreateRenderer (window, -1, 0);
 
   int score = 0;
+  Vector snake_block_size = { .x = 10, .y = 10 };
 
-  Snake snake = (Snake){ .head = (SDL_Rect){ .x = WIDTH / 2,
-                                             .y = HEIGHT / 2,
-                                             .w = 10,
-                                             .h = 10 },
-                         .direction = (Vector){ .x = 0, .y = 0 },
-                         .length = score,
-                         .turning_points = (VectorArray){
-                             .allocation_size = 128,
-                             .length = 0,
-                             .vectors
-                             = malloc (sizeof (Vector)
-                                       * snake.turning_points.allocation_size),
-                         } };
+  Snake snake = (Snake){
+    .direction = (Vector){ .x = 0, .y = 0 },
+    .body = (VectorArray){ .allocation_size = 128,
+                           .length = score,
+                           .vectors = malloc (sizeof (Vector)
+                                              * snake.body.allocation_size) }
+  };
+
+  snake.body.vectors[0] = (Vector){
+    .x = WIDTH / 2,
+    .y = HEIGHT / 2,
+  };
 
   SDL_Rect food = (SDL_Rect){
     .x = (int)(rand () % WIDTH),
@@ -151,7 +146,6 @@ main (void)
   int frame = 0;
   for (;;)
     {
-
       SDL_Event event;
       while (SDL_PollEvent (&event))
         {
@@ -166,19 +160,15 @@ main (void)
                   {
                   case SDLK_d:
                     snake.direction = (Vector){ .x = +1 };
-                    set_turning_point (&snake);
                     break;
                   case SDLK_a:
                     snake.direction = (Vector){ .x = -1 };
-                    set_turning_point (&snake);
                     break;
                   case SDLK_w:
                     snake.direction = (Vector){ .y = -1 };
-                    set_turning_point (&snake);
                     break;
                   case SDLK_s:
                     snake.direction = (Vector){ .y = +1 };
-                    set_turning_point (&snake);
                     break;
                   case SDLK_ESCAPE:
                     return exit_program (renderer, window, snake);
@@ -191,16 +181,30 @@ main (void)
 
       if (!(frame % 20))
         {
-          move_rect (&snake.head, snake.direction);
+          Vector penul_pos, anti_penul_pos;
+          for (size_t i = 0; i <= snake.body.length; ++i)
+            {
+              penul_pos = snake.body.vectors[i];
+              if (i == 0)
+                {
+                  snake.body.vectors[i] = bound_pos (move_pos (
+                      penul_pos, snake.direction, snake_block_size));
+                }
+              else
+                {
+                  snake.body.vectors[i] = anti_penul_pos;
+                }
+              anti_penul_pos = penul_pos;
+            }
         }
 
-      if (abs (food.x - snake.head.x) <= snake.head.w
-          && abs (food.y - snake.head.y) <= snake.head.h)
+      if (abs (food.x - get_snake_head (snake).x) <= snake_block_size.x
+          && abs (food.y - get_snake_head (snake).y) <= snake_block_size.y)
         {
           food.x = (int)(rand () % WIDTH);
           food.y = (int)(rand () % HEIGHT);
 
-          snake.length = (++score);
+          snake.body.length = (++score);
         }
 
       SDL_SetRenderDrawColor (renderer, 0, 0, 0, 0);
@@ -208,7 +212,7 @@ main (void)
 
       SDL_SetRenderDrawColor (renderer, 255, 255, 255, 255);
 
-      render_snake (renderer, snake);
+      render_snake (renderer, snake, snake_block_size);
 
       SDL_RenderFillRect (renderer, &food);
       SDL_RenderPresent (renderer);
