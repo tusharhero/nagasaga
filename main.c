@@ -43,7 +43,7 @@ exit_program (SDL_Renderer *renderer, SDL_Window *window, Snake snake)
 Vector
 bound_pos (Vector pos)
 {
-  Vector bounded_pos;
+  Vector bounded_pos = pos;
   if (pos.x > WIDTH)
     {
       bounded_pos.x = pos.x % WIDTH;
@@ -126,7 +126,7 @@ main (void)
   Snake snake = (Snake){
     .direction = (Vector){ .x = 0, .y = 0 },
     .body = (VectorArray){ .allocation_size = 128,
-                           .length = score,
+                           .length = score + 1,
                            .vectors = malloc (sizeof (Vector)
                                               * snake.body.allocation_size) }
   };
@@ -204,7 +204,7 @@ main (void)
           food.x = (int)(rand () % WIDTH);
           food.y = (int)(rand () % HEIGHT);
 
-          snake.body.length = (++score);
+          snake.body.length = 1 + (++score);
         }
 
       SDL_SetRenderDrawColor (renderer, 0, 0, 0, 0);
