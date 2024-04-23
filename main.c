@@ -179,7 +179,7 @@ main (void)
             }
         }
 
-      if (!(frame % 20))
+      if (!(frame % 250))
         {
           Vector penul_pos, anti_penul_pos;
           for (size_t i = 0; i <= snake.body.length; ++i)
