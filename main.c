@@ -12,8 +12,8 @@
 
 typedef struct
 {
-  int x;
-  int y;
+  double x;
+  double y;
 } Vector;
 
 typedef struct
@@ -45,7 +45,7 @@ bound_pos (Vector pos)
   Vector bounded_pos = pos;
   if (pos.x > WIDTH)
     {
-      bounded_pos.x = pos.x % WIDTH;
+      bounded_pos.x = (int)pos.x % WIDTH;
     }
   if (pos.x < 0)
     {
@@ -53,7 +53,7 @@ bound_pos (Vector pos)
     }
   if (pos.y > HEIGHT)
     {
-      bounded_pos.y = pos.y % HEIGHT;
+      bounded_pos.y = (int)pos.y % HEIGHT;
     }
   if (pos.y < 0)
     {
@@ -63,7 +63,7 @@ bound_pos (Vector pos)
 }
 
 Vector
-move_pos (Vector pos, Vector direction, Vector step_size, size_t delta)
+move_pos (Vector pos, Vector direction, Vector step_size, double delta)
 {
   return (Vector){
     pos.x + direction.x * step_size.x * delta,
@@ -142,9 +142,9 @@ main (void)
     .h = 5,
   };
 
-  size_t last_tick_time = 0;
-  size_t tick_time = SDL_GetTicks ();
-  size_t delta = 0;
+  double last_tick_time = 0;
+  double tick_time = SDL_GetTicks ();
+  double delta = 0;
   int frame = 0;
   for (;;)
     {
@@ -191,9 +191,9 @@ main (void)
           penul_pos = snake.body.vectors[i];
           if (i == 0)
             {
-              snake.body.vectors[i]
-                  = bound_pos (move_pos (penul_pos, snake.direction,
-                                         (Vector){ .x = 1, .y = 1 }, delta));
+              snake.body.vectors[i] = bound_pos (
+                  move_pos (penul_pos, snake.direction,
+                            (Vector){ .x = 10, .y = 10 }, delta / 1000));
             }
           else
             {
